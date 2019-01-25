@@ -84,16 +84,34 @@ class ViolenceDetector:
 				  self._isTrainingPlaceholder : False,
 				  self._trainingStepPlaceholder : 0 }
 		cellStateFeedDict = self._net.GetFeedDictOfLSTM(1, self._listOfPreviousCellState)
-
 		inputFeedDict.update(cellStateFeedDict)
-
+		# print("inputFeedDict",inputFeedDict)
 		tupleOfOutputs = self.session.run( [self._predictionOp] + self._net.GetListOfStatesTensorInLSTMs(),
 			     			   feed_dict = inputFeedDict )
 		listOfOutputs = list(tupleOfOutputs)
+		# print("listOfOutputs",listOfOutputs)
 		prediction = listOfOutputs.pop(0)
+		print("prediction",prediction)
+		# ----------update--------------
+		a = prediction[0][0][0]
+		b = prediction[0][0][1]
+		c = 0
+		result = 0
+		if a > b:
+			c = a
+		else: 
+			c = b
+		print("c",c)
+		if c > 0.7:
+			result = round(c)
+		print("round(result)",round(result))
+		#-----end update-----------------
+		# print("a",a)
+		# print("np.argmax(prediction",np.argmax(prediction)
 		self._listOfPreviousCellState = listOfOutputs
-
-		isFighting = np.equal(np.argmax(prediction), np.argmax(dataSettings.FIGHT_LABEL))
+		# isFighting = np.equal(np.argmax(prediction), np.argmax(dataSettings.FIGHT_LABEL))
+		isFighting = np.equal(result, np.argmax(dataSettings.FIGHT_LABEL))
+		# print("isFighting",isFighting)
 		self._unsmoothedResults.append(isFighting)
 
 		smoothedOutput = self._outputSmoother.Smooth(isFighting)
